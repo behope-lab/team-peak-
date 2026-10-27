@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>축제 기획 시뮬레이션 | Festival Budget Simulation</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            background-color: #ece2cf;
+            color: #2c2421;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4">
+
+    <!-- 언어 선택 바 -->
+    <header class="w-full max-w-2xl flex justify-between items-center py-2.5 px-4 bg-[#f4ecd8] border border-[#d8cbb2] rounded-xl shadow-sm">
+        <span class="text-sm font-bold text-[#905d63]">Global Showcase Project</span>
+        <div class="flex gap-2">
+            <button onclick="setLang('ko')" id="btn-ko" class="px-3 py-1 text-xs rounded-lg bg-[#905d63] text-white font-bold transition shadow-sm">한국어</button>
+            <button onclick="setLang('en')" id="btn-en" class="px-3 py-1 text-xs rounded-lg bg-[#dfd3bc] text-[#5c4749] font-bold transition">English</button>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="w-full max-w-2xl flex-1 flex flex-col justify-center items-center my-4">
+
+        <!-- 1단계: 인트로 및 축제 설정 화면 -->
+        <div id="screen-intro" class="w-full bg-[#f8f2e4] border border-[#dcd0b8] rounded-2xl p-6 md:p-8 text-center shadow-xl flex flex-col items-center justify-center space-y-5">
+            <div class="space-y-1">
+                <h1 id="txt-intro-title" class="text-2xl md:text-3xl font-bold leading-snug text-[#2c2421]">
+                    나만의 축제 기획하기
+                </h1>
+                <p id="txt-intro-desc" class="text-[#6d5f5b] text-sm md:text-base max-w-md">
+                    축제의 테마와 이름, 목적을 설정한 후 예산을 배분해 보세요!
+                </p>
+            </div>
+
+            <!-- 축제 설정 폼 -->
+            <div class="w-full max-w-md bg-[#f0e6d0] p-4 rounded-xl border border-[#d5c7ad] space-y-4 text-left">
+                <!-- 1. 축제 테마 선택 -->
+                <div>
+                    <label id="lbl-theme" class="block text-xs font-bold text-[#7d6f6b] mb-1.5">축제 테마 선택 / Theme</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" onclick="selectTheme('spring')" id="theme-spring" class="theme-btn py-2 text-xs font-bold rounded-lg border border-[#d5c7ad] bg-[#e8dec8] text-[#2c2421] hover:bg-[#905d63] hover:text-white transition">봄</button>
+                        <button type="button" onclick="selectTheme('summer')" id="theme-summer" class="theme-btn py-2 text-xs font-bold rounded-lg border border-[#d5c7ad] bg-[#e8dec8] text-[#2c2421] hover:bg-[#905d63] hover:text-white transition">여름</button>
+                        <button type="button" onclick="selectTheme('autumn')" id="theme-autumn" class="theme-btn py-2 text-xs font-bold rounded-lg border border-[#d5c7ad] bg-[#e8dec8] text-[#2c2421] hover:bg-[#905d63] hover:text-white transition">가을</button>
+                        <button type="button" onclick="selectTheme('winter')" id="theme-winter" class="theme-btn py-2 text-xs font-bold rounded-lg border border-[#d5c7ad] bg-[#e8dec8] text-[#2c2421] hover:bg-[#905d63] hover:text-white transition">겨울</button>
+                    </div>
+                </div>
+
+                <!-- 2. 축제 이름 작성 -->
+                <div>
+                    <label id="lbl-name" class="block text-xs font-bold text-[#7d6f6b] mb-1">축제 이름 / Festival Name</label>
+                    <input type="text" id="input-festival-name" placeholder="예: 피크 유스 페스티벌" class="w-full px-3 py-2 text-sm rounded-lg bg-[#f8f2e4] border border-[#d5c7ad] focus:outline-none focus:border-[#905d63] text-[#2c2421]">
+                </div>
+
+                <!-- 3. 축제 목적 작성 -->
+                <div>
+                    <label id="lbl-purpose" class="block text-xs font-bold text-[#7d6f6b] mb-1">축제 목적 / Purpose</label>
+                    <input type="text" id="input-festival-purpose" placeholder="예: 지역 청년 문화 교류 및 친환경 축제 운영" class="w-full px-3 py-2 text-sm rounded-lg bg-[#f8f2e4] border border-[#d5c7ad] focus:outline-none focus:border-[#905d63] text-[#2c2421]">
+                </div>
+            </div>
+
+            <!-- 시작 버튼 -->
+            <button onclick="startGame()" class="mt-2 group flex flex-col items-center focus:outline-none">
+                <span id="txt-start-btn" class="text-xs text-[#7d6f6b] group-hover:text-[#905d63] mb-1 transition font-semibold">예산 배분 시작하기 / Start Budgeting</span>
+                <div class="w-10 h-10 rounded-full bg-[#905d63] group-hover:bg-[#78494f] text-white flex items-center justify-center shadow-md transition transform group-hover:translate-y-1 font-bold">
+                    ↓
+                </div>
+            </button>
+        </div>
+
+        <!-- 2단계: 게임 탭 (예산 배분 화면) -->
+        <div id="screen-game" class="w-full bg-[#f8f2e4] border border-[#dcd0b8] rounded-2xl p-6 shadow-xl hidden flex flex-col space-y-5">
+            <!-- 선택한 축제 정보 표시 바 -->
+            <div class="bg-[#f4ecd8] p-3 rounded-xl border border-[#d8cbb2] text-center">
+                <span id="display-theme-badge" class="text-xs font-bold px-2.5 py-0.5 rounded bg-[#905d63] text-white inline-block mb-1">봄</span>
+                <h3 id="display-festival-name" class="text-base font-bold text-[#2c2421]">축제 이름</h3>
+                <p id="display-festival-purpose" class="text-xs text-[#6d5f5b] mt-0.5">축제 목적</p>
+            </div>
+
+            <!-- 상단 현황 바 -->
+            <div class="grid grid-cols-2 gap-3 bg-[#f0e6d0] p-4 rounded-xl border border-[#d5c7ad]">
+                <div>
+                    <span id="txt-budget-label" class="text-xs text-[#7d6f6b] font-semibold block">총 잔여 예산 / Remaining Budget</span>
+                    <span class="text-3xl font-extrabold text-[#905d63]"><span id="budget-val">100</span></span>
+                </div>
+                <div class="text-right">
+                    <span id="txt-visitor-label" class="text-xs text-[#7d6f6b] font-semibold block">예상 방문객 수 / Expected Visitors</span>
+                    <span class="text-2xl font-extrabold text-[#905d63]"><span id="visitor-val">500</span>명</span>
+                </div>
+            </div>
+
+            <!-- 기획 항목 리스트 -->
+            <div class="space-y-3 max-h-[42vh] overflow-y-auto pr-1">
+                <div id="items-container" class="space-y-3">
+                    <!-- Dynamic Items Injected Here -->
+                </div>
+            </div>
+
+            <!-- 결과 확인 버튼 -->
+            <button onclick="finishGame()" class="w-full py-3 bg-[#905d63] hover:bg-[#78494f] text-white font-bold rounded-xl shadow-md transition text-center">
+                <span id="txt-submit-btn">축제 결과 확인하기 / Check Festival Results</span>
+            </button>
+        </div>
+
+        <!-- 3단계: 결과 화면 -->
+        <div id="screen-result" class="w-full bg-[#f8f2e4] border border-[#dcd0b8] rounded-2xl p-6 shadow-xl hidden flex flex-col space-y-5">
+            <!-- 축제 명칭 Header -->
+            <div class="text-center border-b border-[#dcd0b8] pb-3">
+                <span id="res-theme-badge" class="text-xs font-bold px-2.5 py-0.5 rounded bg-[#905d63] text-white inline-block mb-1">봄</span>
+                <h2 id="res-festival-name" class="text-xl font-bold text-[#2c2421]">축제 이름</h2>
+                <p id="res-festival-purpose" class="text-xs text-[#6d5f5b] mt-0.5">축제 목적</p>
+            </div>
+
+            <h3 id="txt-result-title" class="text-lg font-bold text-center text-[#905d63]">축제 운영 결과 분석</h3>
+            
+            <!-- 점수 및 평가 영역 (클릭 시 시나리오 토글) -->
+            <div class="space-y-2">
+                <div class="bg-[#f0e6d0] rounded-xl border border-[#d5c7ad] overflow-hidden">
+                    <button type="button" onclick="toggleScenario('fun')" class="w-full flex items-center justify-between px-4 py-3 hover:bg-[#e8dcc8] transition text-left">
+                        <div class="flex items-center gap-3">
+                            <span id="txt-res-fun" class="text-xs text-[#7d6f6b] font-semibold">즐거움 (Fun)</span>
+                            <span id="score-fun" class="text-sm font-bold text-[#905d63]">보통</span>
+                        </div>
+                        <span id="arrow-fun" class="text-xs text-[#7d6f6b] font-bold transition-transform duration-200">▼</span>
+                    </button>
+                    <div id="scenario-fun" class="hidden px-4 pb-3 text-sm text-[#3c322e] leading-relaxed border-t border-[#d5c7ad] pt-3 bg-[#f8f4ec]"></div>
+                </div>
+                <div class="bg-[#f0e6d0] rounded-xl border border-[#d5c7ad] overflow-hidden">
+                    <button type="button" onclick="toggleScenario('safety')" class="w-full flex items-center justify-between px-4 py-3 hover:bg-[#e8dcc8] transition text-left">
+                        <div class="flex items-center gap-3">
+                            <span id="txt-res-safety" class="text-xs text-[#7d6f6b] font-semibold">안전 (Safety)</span>
+                            <span id="score-safety" class="text-sm font-bold text-[#905d63]">보통</span>
+                        </div>
+                        <span id="arrow-safety" class="text-xs text-[#7d6f6b] font-bold transition-transform duration-200">▼</span>
+                    </button>
+                    <div id="scenario-safety" class="hidden px-4 pb-3 text-sm text-[#3c322e] leading-relaxed border-t border-[#d5c7ad] pt-3 bg-[#f8f4ec]"></div>
+                </div>
+                <div class="bg-[#f0e6d0] rounded-xl border border-[#d5c7ad] overflow-hidden">
+                    <button type="button" onclick="toggleScenario('environment')" class="w-full flex items-center justify-between px-4 py-3 hover:bg-[#e8dcc8] transition text-left">
+                        <div class="flex items-center gap-3">
+                            <span id="txt-res-env" class="text-xs text-[#7d6f6b] font-semibold">환경 관리 (Environment)</span>
+                            <span id="score-env" class="text-sm font-bold text-[#905d63]">보통</span>
+                        </div>
+                        <span id="arrow-environment" class="text-xs text-[#7d6f6b] font-bold transition-transform duration-200">▼</span>
+                    </button>
+                    <div id="scenario-environment" class="hidden px-4 pb-3 text-sm text-[#3c322e] leading-relaxed border-t border-[#d5c7ad] pt-3 bg-[#f8f4ec]"></div>
+                </div>
+                <div class="bg-[#f0e6d0] rounded-xl border border-[#d5c7ad] overflow-hidden">
+                    <button type="button" onclick="toggleScenario('stability')" class="w-full flex items-center justify-between px-4 py-3 hover:bg-[#e8dcc8] transition text-left">
+                        <div class="flex items-center gap-3">
+                            <span id="txt-res-stability" class="text-xs text-[#7d6f6b] font-semibold">운영 안정성 (Stability)</span>
+                            <span id="score-stability" class="text-sm font-bold text-[#905d63]">보통</span>
+                        </div>
+                        <span id="arrow-stability" class="text-xs text-[#7d6f6b] font-bold transition-transform duration-200">▼</span>
+                    </button>
+                    <div id="scenario-stability" class="hidden px-4 pb-3 text-sm text-[#3c322e] leading-relaxed border-t border-[#d5c7ad] pt-3 bg-[#f8f4ec]"></div>
+                </div>
+            </div>
+            <p class="text-xs text-[#7d6f6b] text-center">항목을 클릭하면 상세 시나리오를 확인할 수 있습니다.</p>
+
+            <!-- 피드백 메시지 -->
+            <div id="feedback-box" class="bg-[#f0e6d0] p-4 rounded-xl border border-[#d5c7ad] text-sm text-[#3c322e] leading-relaxed font-medium">
+                <!-- 피드백 내용 동적 생성 -->
+            </div>
+
+            <!-- 핵심 메시지 카드 -->
+            <div class="bg-[#f4ebe1] border border-[#905d63]/30 p-4 rounded-xl">
+                <p id="txt-core-msg" class="text-xs text-[#905d63] font-semibold leading-relaxed">
+                    제한된 예산 안에서 모든 요소를 만족시키는 것은 쉽지 않습니다. 하지만 적절한 가이드가 있다면 더 나은 선택을 하고 축제 운영 문제를 최소화할 수 있습니다.
+                </p>
+            </div>
+
+            <button onclick="resetGame()" class="w-full py-3 bg-[#7d6f6b] hover:bg-[#685a56] text-white font-bold rounded-xl transition text-center shadow-sm">
+                <span id="txt-retry-btn">다시 기획하기 / Try Again</span>
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="text-[#7d6f6b] text-xs py-2 font-medium">
+        Global Showcase Project Team PEAK (피크)
+    </footer>
+
+    <!-- JavaScript 로직 -->
+    <script>
+        let currentLang = 'ko';
+        let selectedTheme = 'spring';
+
+        // 항목별/등급별 시나리오 데이터 (한국어 / 영어)
+        const scenarioData = {
+            ko: {
+                fun: {
+                    very_low: "볼거리가 전혀 없어 관객들이 거세게 항의하며 도중에 모두 퇴장합니다.",
+                    low: "프로그램이 지루해 관객들이 흥미를 잃고 일찍 자리를 떠납니다.",
+                    normal: "기본적인 체험이 운영되어 관객들이 무난하게 시간을 보냅니다.",
+                    high: "알찬 프로그램으로 긴 줄이 이어지고 관객들의 만족도가 높습니다.",
+                    best: "역대급 재미라는 극찬과 함께 축제 분위기가 최고조에 달합니다."
+                },
+                safety: {
+                    very_low: "통제선이 무너져 안전사고와 거센 항의가 발생하고 결국 축제가 중단됩니다.",
+                    low: "인력 부족으로 동선이 꼬이고 관객들이 불안감을 느껴 일찍 퇴장합니다.",
+                    normal: "큰 사고 없이 무난하게 마무리되었으나 혼잡함은 다소 아쉽습니다.",
+                    high: "체계적인 동선 관리로 수많은 인파 속에서도 쾌적하게 운영됩니다.",
+                    best: "완벽한 예방 시스템으로 불안감 없이 최고의 안심 축제를 달성합니다."
+                },
+                environment: {
+                    very_low: "쓰레기 산과 악취로 민원이 폭주하며 현장이 난장판이 됩니다.",
+                    low: "곳곳에 방치된 쓰레기로 관객들의 눈살을 찌푸리게 만듭니다.",
+                    normal: "수시로 청소가 이루어져 큰 불편함 없이 유지됩니다.",
+                    high: "분리배출이 잘 관리되어 깨끗한 환경 속에서 진행됩니다.",
+                    best: "쓰레기 하나 없는 친환경 클린 축제로 큰 찬사를 받습니다."
+                },
+                stability: {
+                    very_low: "장비 고장과 지연이 겹치며 현장이 마비되고 환불 항의가 빗발칩니다.",
+                    low: "안내 부족과 진행 미숙으로 관객들이 큰 불편을 겪습니다.",
+                    normal: "예정된 계획대로 차질 없이 무난하게 일정이 소화됩니다.",
+                    high: "변수 발생 시에도 신속하게 대처하여 매끄럽게 진행됩니다.",
+                    best: "1초의 오차도 없는 완벽한 진행으로 명품 축제의 진수를 보여줍니다."
+                }
+            },
+            en: {
+                fun: {
+                    very_low: "With nothing to see, the audience protests loudly and all leave before the event ends.",
+                    low: "The dull program causes visitors to lose interest and head home early.",
+                    normal: "Basic activities run smoothly and visitors pass the time without complaint.",
+                    high: "Packed programming draws long queues and guests leave highly satisfied.",
+                    best: "Hailed as the best festival ever, the atmosphere reaches its absolute peak."
+                },
+                safety: {
+                    very_low: "Control barriers collapse, safety incidents erupt, and the festival is ultimately shut down.",
+                    low: "Understaffing causes crowd chaos, leaving visitors anxious and departing early.",
+                    normal: "No major incidents occur, though some congestion leaves a minor impression.",
+                    high: "Systematic crowd management keeps the event comfortable even through massive crowds.",
+                    best: "A flawless prevention system delivers a completely stress-free, gold-standard safe festival."
+                },
+                environment: {
+                    very_low: "Mountains of trash and foul odors trigger a flood of complaints, turning the venue into chaos.",
+                    low: "Litter strewn across the grounds draws frowns and dissatisfaction from visitors.",
+                    normal: "Regular clean-ups keep the venue tidy enough for guests to stay comfortable.",
+                    high: "Well-managed recycling stations ensure a clean and pleasant environment throughout.",
+                    best: "Not a single piece of litter in sight — the eco-friendly clean festival earns widespread praise."
+                },
+                stability: {
+                    very_low: "Equipment failures and delays pile up, paralyzing operations and sparking a wave of refund demands.",
+                    low: "Poor signage and inexperienced staff leave visitors frustrated throughout the event.",
+                    normal: "The schedule runs exactly as planned with no notable disruptions.",
+                    high: "Unexpected issues are handled swiftly, keeping the event flowing without a hitch.",
+                    best: "Executed with zero margin of error, the festival sets the gold standard for flawless events."
+                }
+            }
+        };
+
+        // 등급 번호(1~5) -> scenarioData 키 변환
+        function tierToKey(tier) {
+            if (tier <= 1) return 'very_low';
+            if (tier === 2) return 'low';
+            if (tier === 3) return 'normal';
+            if (tier === 4) return 'high';
+            return 'best';
+        }
+
+        // 평가 항목 아코디언 토글
+        function toggleScenario(key) {
+            const panel = document.getElementById('scenario-' + key);
+            const arrow = document.getElementById('arrow-' + key);
+            if (!panel) return;
+            const isHidden = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !isHidden);
+            if (arrow) arrow.textContent = isHidden ? '▲' : '▼';
+        }
+
+        const themeLabels = {
+            spring: { ko: "봄", en: "Spring" },
+            summer: { ko: "여름", en: "Summer" },
+            autumn: { ko: "가을", en: "Autumn" },
+            winter: { ko: "겨울", en: "Winter" }
+        };
+
+        const i18n = {
+            ko: {
+                introTitle: "나만의 축제 기획하기",
+                introDesc: "축제의 테마와 이름, 목적을 설정한 후 예산을 배분해 보세요!",
+                lblTheme: "축제 테마 선택 / Theme",
+                lblName: "축제 이름 / Festival Name",
+                lblPurpose: "축제 목적 / Purpose",
+                namePlaceholder: "예: 피크 유스 페스티벌",
+                purposePlaceholder: "예: 지역 청년 문화 교류 및 친환경 축제 운영",
+                startBtn: "예산 배분 시작하기",
+                budgetLabel: "총 잔여 예산",
+                visitorLabel: "예상 방문객 수",
+                submitBtn: "축제 결과 확인하기",
+                resultTitle: "축제 운영 결과 분석",
+                resFun: "즐거움 (Fun)",
+                resSafety: "안전 (Safety)",
+                resEnv: "환경 관리 (Environment)",
+                resStability: "운영 안정성 (Stability)",
+                retryBtn: "다시 기획하기",
+                coreMsg: "제한된 예산 안에서 모든 요소를 만족시키는 것은 쉽지 않습니다. 하지만 적절한 가이드가 있다면 더 나은 선택을 하고 축제 운영 문제를 최소화할 수 있습니다.",
+                items: [
+                    { id: 1, name: "기본 프로그램 운영", cost: 20, image: "basic_program.jpg" },
+                    { id: 2, name: "특별 체험 프로그램", cost: 10, image: "special_program.jpg" },
+                    { id: 3, name: "외부 공연 섭외", cost: 15, image: "performance.jpg" },
+                    { id: 4, name: "무대 및 공간 꾸미기", cost: 5, image: "stage.jpg" },
+                    { id: 5, name: "안전 관리", cost: 10, image: "safety.jpg" },
+                    { id: 6, name: "쓰레기통 및 분리배출 안내", cost: 5, image: "recycle.jpg" },
+                    { id: 7, name: "청소 및 운영 인력", cost: 15, image: "staff.jpg" }
+                ]
+            },
+            en: {
+                introTitle: "Design Your Own Festival",
+                introDesc: "Set your festival theme, name, and purpose before allocating the budget!",
+                lblTheme: "Select Theme",
+                lblName: "Festival Name",
+                lblPurpose: "Festival Purpose",
+                namePlaceholder: "e.g., PEAK Youth Festival",
+                purposePlaceholder: "e.g., Youth culture exchange and eco-friendly festival management",
+                startBtn: "Start Budgeting",
+                budgetLabel: "Remaining Budget",
+                visitorLabel: "Expected Visitors",
+                submitBtn: "Check Festival Results",
+                resultTitle: "Festival Operation Results",
+                resFun: "Fun",
+                resSafety: "Safety",
+                resEnv: "Environment",
+                resStability: "Stability",
+                retryBtn: "Try Again",
+                coreMsg: "Satisfying all elements on a limited budget is difficult. However, with proper guidance, you can make better choices and minimize operational issues.",
+                items: [
+                    { id: 1, name: "Basic Program Operation", cost: 20, image: "basic_program.jpg" },
+                    { id: 2, name: "Special Experience Program", cost: 10, image: "special_program.jpg" },
+                    { id: 3, name: "External Performance Booking", cost: 15, image: "performance.jpg" },
+                    { id: 4, name: "Stage & Space Decor", cost: 5, image: "stage.jpg" },
+                    { id: 5, name: "Safety Management", cost: 10, image: "safety.jpg" },
+                    { id: 6, name: "Bins & Recycling Guide", cost: 5, image: "recycle.jpg" },
+                    { id: 7, name: "Cleaning & Operations Staff", cost: 15, image: "staff.jpg" }
+                ]
+            }
+        };
+
+        let budget = 100;
+        let visitors = 500;
+        let allocations = {};
+
+        function selectTheme(theme) {
+            selectedTheme = theme;
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('bg-[#905d63]', 'text-white');
+                btn.classList.add('bg-[#e8dec8]', 'text-[#2c2421]');
+            });
+            const selectedBtn = document.getElementById(`theme-${theme}`);
+            if (selectedBtn) {
+                selectedBtn.classList.remove('bg-[#e8dec8]', 'text-[#2c2421]');
+                selectedBtn.classList.add('bg-[#905d63]', 'text-white');
+            }
+        }
+
+        function initAllocations() {
+            allocations = {};
+            i18n[currentLang].items.forEach(item => {
+                allocations[item.id] = 0;
+            });
+            visitors = 500;
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.getElementById('btn-ko').className = lang === 'ko' ? "px-3 py-1 text-xs rounded-lg bg-[#905d63] text-white font-bold transition shadow-sm" : "px-3 py-1 text-xs rounded-lg bg-[#dfd3bc] text-[#5c4749] font-bold transition";
+            document.getElementById('btn-en').className = lang === 'en' ? "px-3 py-1 text-xs rounded-lg bg-[#905d63] text-white font-bold transition shadow-sm" : "px-3 py-1 text-xs rounded-lg bg-[#dfd3bc] text-[#5c4749] font-bold transition";
+            
+            document.getElementById('txt-intro-title').innerText = i18n[lang].introTitle;
+            document.getElementById('txt-intro-desc').innerText = i18n[lang].introDesc;
+            document.getElementById('lbl-theme').innerText = i18n[lang].lblTheme;
+            document.getElementById('lbl-name').innerText = i18n[lang].lblName;
+            document.getElementById('lbl-purpose').innerText = i18n[lang].lblPurpose;
+            document.getElementById('input-festival-name').placeholder = i18n[lang].namePlaceholder;
+            document.getElementById('input-festival-purpose').placeholder = i18n[lang].purposePlaceholder;
+            document.getElementById('txt-start-btn').innerText = i18n[lang].startBtn + " / Start Budgeting";
+            document.getElementById('txt-budget-label').innerText = i18n[lang].budgetLabel;
+            document.getElementById('txt-visitor-label').innerText = i18n[lang].visitorLabel;
+            document.getElementById('txt-submit-btn').innerText = i18n[lang].submitBtn;
+            document.getElementById('txt-result-title').innerText = i18n[lang].resultTitle;
+            document.getElementById('txt-res-fun').innerText = i18n[lang].resFun;
+            document.getElementById('txt-res-safety').innerText = i18n[lang].resSafety;
+            document.getElementById('txt-res-env').innerText = i18n[lang].resEnv;
+            document.getElementById('txt-res-stability').innerText = i18n[lang].resStability;
+            document.getElementById('txt-retry-btn').innerText = i18n[lang].retryBtn;
+            document.getElementById('txt-core-msg').innerText = i18n[lang].coreMsg;
+
+            if (document.getElementById('theme-spring')) {
+                document.getElementById('theme-spring').innerText = themeLabels.spring[lang];
+                document.getElementById('theme-summer').innerText = themeLabels.summer[lang];
+                document.getElementById('theme-autumn').innerText = themeLabels.autumn[lang];
+                document.getElementById('theme-winter').innerText = themeLabels.winter[lang];
+            }
+            if (document.getElementById('display-theme-badge')) {
+                document.getElementById('display-theme-badge').innerText = themeLabels[selectedTheme][lang];
+            }
+            if (document.getElementById('res-theme-badge')) {
+                document.getElementById('res-theme-badge').innerText = themeLabels[selectedTheme][lang];
+            }
+
+            renderItems();
+        }
+
+        function startGame() {
+            const festName = document.getElementById('input-festival-name').value.trim() || (currentLang === 'ko' ? "나의 축제" : "My Festival");
+            const festPurpose = document.getElementById('input-festival-purpose').value.trim() || (currentLang === 'ko' ? "즐거운 축제 운영" : "Enjoyable Festival Operation");
+            const themeText = themeLabels[selectedTheme][currentLang];
+
+            document.getElementById('display-theme-badge').innerText = themeText;
+            document.getElementById('display-festival-name').innerText = festName;
+            document.getElementById('display-festival-purpose').innerText = festPurpose;
+
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            initAllocations();
+            budget = 100;
+            updateUI();
+        }
+
+        function renderItems() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
+            i18n[currentLang].items.forEach(item => {
+                const count = allocations[item.id] || 0;
+                const costText = currentLang === 'ko' ? `비용: ${item.cost}` : `Cost: ${item.cost}`;
+                const imgHtml = item.image ? `
+                    <div class="relative group cursor-pointer flex-shrink-0" onclick="openImageModal('${item.image}')" title="${currentLang === 'ko' ? '사진 크게 보기' : 'Click to view photo'}">
+                        <img src="${item.image}" alt="${item.name}" class="w-14 h-14 md:w-16 md:h-16 object-cover rounded-xl border-2 border-[#d5c7ad] group-hover:border-[#905d63] shadow-sm transition transform group-hover:scale-105">
+                        <span class="absolute bottom-0 right-0 bg-[#905d63] text-white p-0.5 rounded-tl-md text-[9px] px-1 opacity-90">🔍</span>
+                    </div>
+                ` : '';
+                const html = `
+                    <div class="bg-[#f0e6d0] p-3 rounded-xl border border-[#d5c7ad] flex justify-between items-center shadow-sm hover:shadow transition">
+                        <div class="flex items-center gap-3 pr-2">
+                            ${imgHtml}
+                            <div>
+                                <h4 class="text-sm md:text-base font-bold text-[#2c2421] leading-tight">${item.name}</h4>
+                                <span class="text-xs md:text-sm font-bold text-[#905d63] mt-1 block">${costText}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
+                            <button onclick="changeAllocation(${item.id}, -1)" class="w-9 h-9 rounded-lg bg-[#dfd3bc] hover:bg-[#d0c2aa] text-[#2c2421] font-bold text-lg flex items-center justify-center transition shadow-sm">-</button>
+                            <span class="w-6 text-center font-extrabold text-lg text-[#905d63]">${count}</span>
+                            <button onclick="changeAllocation(${item.id}, 1)" class="w-9 h-9 rounded-lg bg-[#dfd3bc] hover:bg-[#d0c2aa] text-[#2c2421] font-bold text-lg flex items-center justify-center transition shadow-sm">+</button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        function changeAllocation(itemId, delta) {
+            const item = i18n[currentLang].items.find(i => i.id === itemId);
+            const currentCount = allocations[itemId];
+            const newCount = currentCount + delta;
+
+            if (newCount >= 0) {
+                const costDiff = delta * item.cost;
+                if (budget - costDiff >= 0 && budget - costDiff <= 100) {
+                    budget -= costDiff;
+                    allocations[itemId] = newCount;
+
+                    const p1 = allocations[1] || 0;
+                    const p2 = allocations[2] || 0;
+                    const p3 = allocations[3] || 0;
+                    visitors = 500 + (p1 * 50) + (p2 * 100) + (p3 * 300);
+
+                    updateUI();
+                }
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('budget-val').innerText = budget;
+            document.getElementById('visitor-val').innerText = visitors;
+            renderItems();
+        }
+
+        function finishGame() {
+            const festName = document.getElementById('input-festival-name').value.trim() || (currentLang === 'ko' ? "나의 축제" : "My Festival");
+            const festPurpose = document.getElementById('input-festival-purpose').value.trim() || (currentLang === 'ko' ? "즐거운 축제 운영" : "Enjoyable Festival Operation");
+            const themeText = themeLabels[selectedTheme][currentLang];
+
+            document.getElementById('res-theme-badge').innerText = themeText;
+            document.getElementById('res-festival-name').innerText = festName;
+            document.getElementById('res-festival-purpose').innerText = festPurpose;
+
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            const p1 = allocations[1] || 0;
+            const p2 = allocations[2] || 0;
+            const p3 = allocations[3] || 0;
+            const decor = allocations[4] || 0;
+            const safety = allocations[5] || 0;
+            const bin = allocations[6] || 0;
+            const staff = allocations[7] || 0;
+
+            const isKo = (currentLang === 'ko');
+
+            // ① 즐거움 (Fun): 원래 공식으로 복구
+            // 공식: (기본 프로그램 + 특별 체험 + 외부 공연 투자 횟수) + (공간 꾸미기가 1회 이상이면 +1)
+            const funScore = (p1 + p2 + p3) + (decor >= 1 ? 1 : 0);
+
+            // ② 안전 및 ③ 환경 관리 점수
+            const safetyTotal = safety + staff;
+            const envTotal = bin + staff;
+            const crowdPenalty = Math.floor((visitors - 500) / 200);
+            const safetyScore = safetyTotal - crowdPenalty;
+            const envScore = envTotal - crowdPenalty;
+
+            // 각 3개 지표별 등급 산출 (1: 매우 낮음, 2: 낮음, 3: 보통, 4: 높음, 5: 최고)
+            const funTier = getFunTier(funScore);
+            const safetyTier = getLevelTier(safetyScore);
+            const envTier = getLevelTier(envScore);
+
+            // ④ 운영 안정성 (Stability): 즐거움, 안전, 환경 3가지 등급의 평균 (반올림)
+            const stabilityTier = Math.round((funTier + safetyTier + envTier) / 3);
+
+            const totalSpentCount = p1 + p2 + p3 + decor + safety + bin + staff;
+
+            // 결과 화면에 등급 명칭 표시
+            document.getElementById('score-fun').innerText = tierToText(funTier, isKo);
+            document.getElementById('score-safety').innerText = tierToText(safetyTier, isKo);
+            document.getElementById('score-env').innerText = tierToText(envTier, isKo);
+            document.getElementById('score-stability').innerText = tierToText(stabilityTier, isKo);
+
+            // 시나리오 텍스트 주입 + 아코디언 초기화(닫힌 상태)
+            const sd = scenarioData[currentLang];
+            document.getElementById('scenario-fun').innerText = sd.fun[tierToKey(funTier)];
+            document.getElementById('scenario-safety').innerText = sd.safety[tierToKey(safetyTier)];
+            document.getElementById('scenario-environment').innerText = sd.environment[tierToKey(envTier)];
+            document.getElementById('scenario-stability').innerText = sd.stability[tierToKey(stabilityTier)];
+            ['fun','safety','environment','stability'].forEach(k => {
+                const p = document.getElementById('scenario-' + k);
+                const a = document.getElementById('arrow-' + k);
+                if (p) p.classList.add('hidden');
+                if (a) a.textContent = '▼';
+            });
+
+            let feedback = "";
+            if (totalSpentCount === 0) {
+                feedback = isKo 
+                    ? "⚠️ 예산을 전혀 사용하지 않았습니다! 준비가 전혀 되지 않아 축제가 취소될 위기에 처했습니다." 
+                    : "⚠️ No budget was allocated! The festival is at risk of cancellation due to total lack of preparation.";
+            } else if (visitors > 800 && safety < 2) {
+                feedback = isKo
+                    ? `⚠️ [방문객 폭증 위기] 방문객이 ${visitors}명으로 폭증했으나 안전 관리가 미흡해 큰 혼잡이 발생했습니다!`
+                    : `⚠️ [Crowd Surge Warning] Visitors surged to ${visitors}, but lacking safety caused severe congestion!`;
+            } else if (bin > 0 && staff === 0) {
+                feedback = isKo
+                    ? "⚠️ [연계 경고] 쓰레기통만 배치하고 청소 인력을 두지 않아 결국 쓰레기가 산더미처럼 쌓이고 말았습니다."
+                    : "⚠️ [Linkage Warning] Bins were placed without cleaning staff, leading to piles of trash.";
+            } else if (safetyTotal >= 4 && envTotal >= 4 && funScore >= 4) {
+                feedback = isKo
+                    ? `✨ [완벽한 균형] ${visitors}명의 대규모 방문객을 상대로 즐거움, 안전, 환경 관리를 모두 조화롭게 통제하여 역대 최고의 축제를 만들었습니다!`
+                    : `✨ [Perfect Balance] Successfully managed ${visitors} visitors with balanced fun, safety, and environmental care!`;
+            } else {
+                feedback = isKo 
+                    ? `👍 ${visitors}명의 방문객과 함께 축제가 무난히 진행되었습니다. 프로그램 확장에 따른 인프라 연계를 고려하면 더욱 완벽할 것입니다.` 
+                    : `👍 The festival with ${visitors} visitors went reasonably well. Considering infrastructure linkages for expanded programs would make it even better.`;
+            }
+
+            document.getElementById('feedback-box').innerText = feedback;
+        }
+
+        // 즐거움 판정 구간 (0점: 매우 낮음, 1점: 낮음, 2~4점: 보통, 5점: 높음, 6점 이상: 최고)
+        function getFunTier(score) {
+            if (score <= 0) return 1; // 0점: 매우 낮음
+            if (score <= 1) return 2; // 1점: 낮음
+            if (score <= 4) return 3; // 2~4점: 보통
+            if (score <= 5) return 4; // 5점: 높음
+            return 5;                 // 6점 이상: 최고
+        }
+
+        // 안전 및 환경 관리 등급 산출 (1: 매우 낮음, 2: 낮음, 3: 보통, 4: 높음, 5: 최고)
+        function getLevelTier(score) {
+            if (score <= 1) return 1;  // 매우 낮음
+            if (score <= 3) return 2;  // 낮음
+            if (score <= 6) return 3;  // 보통
+            if (score <= 10) return 4; // 높음
+            return 5;                  // 최고
+        }
+
+        // 등급 번호(1~5) -> 언어별 텍스트 변환
+        function tierToText(tier, isKo) {
+            if (tier <= 1) return isKo ? "매우 낮음" : "Very Low";
+            if (tier === 2) return isKo ? "낮음" : "Low";
+            if (tier === 3) return isKo ? "보통" : "Moderate";
+            if (tier === 4) return isKo ? "높음" : "High";
+            return isKo ? "최고" : "Best";
+        }
+
+        function resetGame() {
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-intro').classList.remove('hidden');
+        }
+
+        function openImageModal(src) {
+            const modal = document.getElementById('image-modal');
+            const img = document.getElementById('modal-img');
+            const caption = document.getElementById('modal-caption');
+            if (modal && img) {
+                img.src = src;
+                if (caption) {
+                    caption.innerText = currentLang === 'ko' ? '예시 사진' : 'Example Photo';
+                }
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('image-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        selectTheme('spring');
+        setLang('ko');
+    </script>
+
+    <!-- 이미지 확대 모달 -->
+    <div id="image-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all" onclick="closeImageModal()">
+        <div class="relative max-w-md w-full bg-[#f8f2e4] p-4 rounded-2xl shadow-2xl border border-[#dcd0b8]" onclick="event.stopPropagation()">
+            <button onclick="closeImageModal()" class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-[#905d63] hover:bg-[#78494f] text-white flex items-center justify-center font-bold text-sm shadow-md transition">✕</button>
+            <img id="modal-img" src="special_program.jpg" alt="사진 미리보기" class="w-full h-auto rounded-xl object-cover shadow-sm max-h-[70vh]">
+            <p id="modal-caption" class="text-center text-xs md:text-sm text-[#5c4749] mt-3 font-bold">예시 사진</p>
+        </div>
+    </div>
+</body>
+</html>
